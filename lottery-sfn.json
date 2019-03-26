@@ -109,7 +109,7 @@
              "Type": "Task",
              "InputPath": "$.body",
              "Resource":
-               "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-RecordWinners",
+               "arn:aws:lambda:ap-southeast-1:<account-id>:function:Lottery-RecordWinners",
              "TimeoutSeconds": 300,
              "End": true
            }
