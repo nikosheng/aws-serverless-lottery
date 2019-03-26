@@ -4,7 +4,7 @@
   "States": {
     "Input Lottery Winners": {
         "Type": "Task",
-        "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-InputWinners",
+        "Resource": "arn:aws:lambda:ap-southeast-1:<account-id>:function:Lottery-InputWinners",
         "ResultPath": "$",
         "Catch": [ 
             {          
@@ -21,7 +21,7 @@
     "Random Select Winners": {
       "Type": "Task",
       "InputPath": "$.body",
-      "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-RandomSelectWinners",
+      "Resource": "arn:aws:lambda:ap-southeast-1:<account-id>:function:Lottery-RandomSelectWinners",
       "Catch": [ 
         {          
           "ErrorEquals": [ "States.ALL" ],
@@ -40,7 +40,7 @@
     "Validate Winners": {
       "Type": "Task",
       "InputPath": "$.body",
-      "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-ValidateWinners",
+      "Resource": "arn:aws:lambda:ap-southeast-1:<account-id>:function:Lottery-ValidateWinners",
       "Catch": [ 
         {          
           "ErrorEquals": [ "States.ALL" ],
@@ -95,7 +95,7 @@
              "Type": "Task",
              "Resource": "arn:aws:states:::sns:publish",
              "Parameters": {
-               "TopicArn": "arn:aws:sns:ap-southeast-1:379951292773:Lottery-Notification",
+               "TopicArn": "arn:aws:sns:ap-southeast-1:<account-id>:Lottery-Notification",
                "Message.$": "$.body"
              },
              "End": true
