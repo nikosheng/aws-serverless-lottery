@@ -2,5 +2,5 @@
 A lottery mocking project which is all built by AWS Serverless ecosystem including API Gateway, Step Functions, Lambda, SNS, Dynamodb
 
 ## Workflow Overview
-![Workflow](docs/images/stepdiagram.png)
+![Workflow](docs/img/workflow.png)
 
