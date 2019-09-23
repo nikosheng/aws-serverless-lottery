@@ -30,6 +30,16 @@
 
 ## 详细步骤
 
+### 创建AWS SNS 通知服务
+1. 进入AWS控制台，在`服务`中搜索`SNS`
+2. 在`SNS`控制面板中，选择`主题`, 然后选择`创建主题`
+3. 在`创建新主题`弹框中，输入
+  - 主题名称: `Lottery-Notification`
+  - 显示名称: `Lottery`
+
+### 创建Amazon Dynamodb 服务
+
+
 ### 创建AWS Step Functions 状态机
 
 1. 进入AWS控制台，在`服务`中搜索`Step Functions`
