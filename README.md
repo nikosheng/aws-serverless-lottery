@@ -11,10 +11,16 @@
 - 本文实验基于AWS中国区宁夏区(cn-northwest-1)作示例。所有控制台链接均直接连接到北京区console。如使用海外区账号，请不要点击此直达连接，在global控制台选择相应产品即可。
 - 如果您使用的是AWS中国区账号，账号默认屏蔽了80,8080,443三个端口，需要先申请打开443端口才可以正常使用API Gateway的服务。如果是海外账号，没有此限制。
 - 如何判断自己的账号是中国区账号还是海外区账号？请查看自己的控制台链接，console.amazonaws.cn为中国区，console.aws.amazon.com为海外区账号。
-- 在`Identiy Access Management`服务中创建一个本次实验需要用到的角色，包含本次实验需要使用到的服务权限
-```
-1. 进入`IAM` 服务后，点击左侧栏目的`角色`
-```
+- 在`Identiy Access Management`服务中创建一个本次实验需要用到的`AWS Lambda`服务角色，包含本次实验需要使用到的服务权限。角色包含如下四个托管的策略
+  - AmazonDynamoDBFullAccess
+  - AWSLambdaBasicExecutionRole
+  - AmazonSNSFullAccess
+  - AWSStepFunctionsFullAccess
+具体的角色创建流程，可以参考如下连接
+[AWS Lambda Execution Role](https://docs.aws.amazon.com/lambda/latest/dg/lambda-intro-execution-role.html)
+[Creating a Role to Delegate Permissions to an AWS Service](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-service.html)
+
+
 
 ## Architecture
 ![Architecture](docs/img/architecture.png)
@@ -38,7 +44,7 @@
   "States": {
     "Input Lottery Winners": {
         "Type": "Task",
-        "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-InputWinners",
+        "Resource": "<InputWinners:ARN>",
         "ResultPath": "$",
         "Catch": [ 
             {          
@@ -55,7 +61,7 @@
     "Random Select Winners": {
       "Type": "Task",
       "InputPath": "$.body",
-      "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-RandomSelectWinners",
+      "Resource": "<RandomSelectWinners:ARN>",
       "Catch": [ 
         {          
           "ErrorEquals": [ "States.ALL" ],
@@ -74,7 +80,7 @@
     "Validate Winners": {
       "Type": "Task",
       "InputPath": "$.body",
-      "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-ValidateWinners",
+      "Resource": "<ValidateWinners:ARN>",
       "Catch": [ 
         {          
           "ErrorEquals": [ "States.ALL" ],
@@ -143,7 +149,7 @@
              "Type": "Task",
              "InputPath": "$.body",
              "Resource":
-               "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-RecordWinners",
+               "<RecordWinners:ARN>",
              "TimeoutSeconds": 300,
              "End": true
            }
@@ -166,6 +172,143 @@
 
 1. 进入AWS控制台，选择`服务`然后输入`Lambda`进入`AWS Lambda`控制台
 2. 选择`创建函数`，然后选择`从头开始创作`来自定义我们的实验程序
-3. 首先我们需要创建状态机中的第一个状态任务`Input Lottery Winners`，输入函数名称`InputWinners`来定义幸运儿的数量。运行语言选择`Python 3.7`。同时需要选择函数执行的权限, 这里我们选择`创建具有基本Lambda权限的新角色`
+3. 首先我们需要创建状态机中的第一个状态任务`Input Lottery Winners`，输入函数名称`Lottery-InputWinners`来定义幸运儿的数量。运行语言选择`Python 3.7`。同时需要选择函数执行的权限, 这里我们选择`使用现用角色`，选择我们在`前提条件`下创建的`IAM`角色
+4. 点击`创建函数`
+5. 在`函数代码`栏目下输入如下代码块
+```
+import json
+
+class CustomError(Exception):
+    pass
+
+def lambda_handler(event, context):
+    num_of_winners = event['input']
+    
+    # Trigger the Failed process
+    if 'exception' in event:
+        raise CustomError("An error occurred!!")
+    
+    return {
+        "body": {
+            "num_of_winners": num_of_winners
+        }
+    }
+```
+6. 点击右上角的`保存`
+7. 保存成功后复制页面右上角的`ARN`，替换原`Step Functions`状态机定义下的`<InputWinners:ARN>`
+
+接下来我们还需要创建另外三个需要定义的状态机业务逻辑，创建过程和上面的`Lottery-InputWinners`一致，下面是具体的状态机`AWS Lambda`代码块
+
+`Lottery-RandomSelectWinners` 代码块
+```
+import json
+import boto3
+from random import randint
+from boto3.dynamodb.conditions import Key, Attr
+
+TOTAL_NUM = 10
+
+def lambda_handler(event, context):
+    # variables
+    num_of_winners = event['num_of_winners']
+    
+    # query in dynamodb
+    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+    table = dynamodb.Table('Lottery-Employee')
+
+    # random select the winners, if has duplicate value, re-run the process
+    while True:
+        lottery_serials = [randint(1,TOTAL_NUM) for i in range(num_of_winners)]
+        if len(lottery_serials) == len(set(lottery_serials)):
+            break
+    
+    # retrieve the employee details from dynamodb
+    results = [table.query(KeyConditionExpression=Key('lottery_serial').eq(serial), IndexName='lottery_serial-index') for serial in lottery_serials]
+    
+    # format results
+    winner_details = [result['Items'][0] for result in results]
+    
+    return {
+        "body": {
+            "num_of_winners": num_of_winners,
+            "winner_details": winner_details
+        }
+    }
+```
+保存成功后复制页面右上角的`ARN`，替换原`Step Functions`状态机定义下的`<RandomSelectWinners:ARN>`
+
+`Lottery-ValidateWinners`代码块
+```
+import json
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
+def lambda_handler(event, context):
+    # variables
+    num_of_winners = event['num_of_winners']
+    winner_details = event['winner_details']
+    
+    # query in dynamodb
+    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+    table = dynamodb.Table('Lottery-Winners')
+
+    # valiate whether the winner has already been selected in the past draw
+    winners_employee_id = [winner['employee_id'] for winner in winner_details]
+    results = [table.query(KeyConditionExpression=Key('employee_id').eq(employee_id)) for employee_id in winners_employee_id]
+    output = [result['Items'] for result in results if result['Count'] > 0]
+    
+    # if winner is in the past draw, return 0 else return 1
+    has_winner_in_queue = 1 if len(output) > 0 else 0
+    
+    # format the winner details in sns
+    winner_names = [winner['employee_name'] for winner in winner_details]
+    
+    name_s = ""
+    for name in winner_names:
+        name_s += name
+        name_s += " "
+        
+    return {
+        "body": {
+            "num_of_winners": num_of_winners,
+            "winner_details": winner_details
+        },
+        "status": has_winner_in_queue,
+        "sns": "Congrats! [{}] You have selected as the Lucky Champ!".format(name_s.strip())
+    }
+```
+保存成功后复制页面右上角的`ARN`，替换原`Step Functions`状态机定义下的`<ValidateWinners:ARN>`
+
+`Lottery-RecordWinners` 代码块
+```
+import json
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
+def lambda_handler(event, context):
+    # variables
+    winner_details = event['winner_details']
+    
+    # retrieve the winners' employee id
+    employee_ids = [winner['employee_id'] for winner in winner_details]
+    
+    # save the records in dynamodb
+    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+    table = dynamodb.Table('Lottery-Winners')
+    
+    for employee_id in employee_ids:
+        table.put_item(Item={
+            'employee_id': employee_id
+        })
+        
+    return {
+        "body": {
+            "winners": winner_details
+        },
+        "status_code": "SUCCESS" 
+    }
+```
+保存成功后复制页面右上角的`ARN`，替换原`Step Functions`状态机定义下的`<RecordWinners:ARN>`
+
 ## 参考
 
