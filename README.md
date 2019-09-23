@@ -11,6 +11,10 @@
 - 本文实验基于AWS中国区宁夏区(cn-northwest-1)作示例。所有控制台链接均直接连接到北京区console。如使用海外区账号，请不要点击此直达连接，在global控制台选择相应产品即可。
 - 如果您使用的是AWS中国区账号，账号默认屏蔽了80,8080,443三个端口，需要先申请打开443端口才可以正常使用API Gateway的服务。如果是海外账号，没有此限制。
 - 如何判断自己的账号是中国区账号还是海外区账号？请查看自己的控制台链接，console.amazonaws.cn为中国区，console.aws.amazon.com为海外区账号。
+- 在`Identiy Access Management`服务中创建一个本次实验需要用到的角色，包含本次实验需要使用到的服务权限
+```
+1. 进入`IAM` 服务后，点击左侧栏目的`角色`
+```
 
 ## Architecture
 ![Architecture](docs/img/architecture.png)
@@ -157,5 +161,11 @@
 7. 在`配置设置`下，选择`为我创建IAM角色`, 输入自定义的IAM角色名称`MyStepFunctionsExecutionRole`
 8. 点击`创建状态机`完成创建过程
 
+### 创建AWS Lambda任务
+为了实现`Step Functions`状态机流转下的任务，我们这次实现会用到`AWS Lambda`作为我们业务的实现环境
+
+1. 进入AWS控制台，选择`服务`然后输入`Lambda`进入`AWS Lambda`控制台
+2. 选择`创建函数`，然后选择`从头开始创作`来自定义我们的实验程序
+3. 首先我们需要创建状态机中的第一个状态任务`Input Lottery Winners`，输入函数名称`InputWinners`来定义幸运儿的数量。运行语言选择`Python 3.7`。同时需要选择函数执行的权限, 这里我们选择`创建具有基本Lambda权限的新角色`
 ## 参考
 
