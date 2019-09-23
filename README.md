@@ -20,5 +20,142 @@
 
 ## 详细步骤
 
+### 创建AWS Step Functions 状态机
+
+1. 进入AWS控制台，在`服务`中搜索`Step Functions`
+2. 进入`Step Functions`服务后，点击左侧的活动栏，并点击`状态机`
+3. 进入`状态机`主页面后，选择`创建状态机`
+4. 在`定义状态机`栏目下，选择默认`使用代码段创作`。同时在`详细信息`栏目输入状态机名称`Lottery`
+5. 在`状态机定义`栏目下，复制如下状态机定义文件，通过`Amazon States Language`来定义状态机的状态流转
+```
+{
+  "Comment": "A simple AWS Step Functions state machine that simulates the lottery session",
+  "StartAt": "Input Lottery Winners",
+  "States": {
+    "Input Lottery Winners": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-InputWinners",
+        "ResultPath": "$",
+        "Catch": [ 
+            {          
+              "ErrorEquals": [ "CustomError" ],
+              "Next": "Failed"      
+            },
+            {          
+              "ErrorEquals": [ "States.ALL" ],
+              "Next": "Failed"      
+            } 
+          ],
+        "Next": "Random Select Winners"
+    }, 
+    "Random Select Winners": {
+      "Type": "Task",
+      "InputPath": "$.body",
+      "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-RandomSelectWinners",
+      "Catch": [ 
+        {          
+          "ErrorEquals": [ "States.ALL" ],
+          "Next": "Failed"      
+        } 
+      ],      
+     "Retry": [ 
+        {
+          "ErrorEquals": [ "States.ALL"],          
+          "IntervalSeconds": 1, 
+          "MaxAttempts": 2
+        } 
+      ],
+      "Next": "Validate Winners"
+    },
+    "Validate Winners": {
+      "Type": "Task",
+      "InputPath": "$.body",
+      "Resource": "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-ValidateWinners",
+      "Catch": [ 
+        {          
+          "ErrorEquals": [ "States.ALL" ],
+          "Next": "Failed"      
+        } 
+      ],      
+     "Retry": [ 
+        {
+          "ErrorEquals": [ "States.ALL"],          
+          "IntervalSeconds": 1, 
+          "MaxAttempts": 2
+        } 
+      ],
+      "Next": "Is Winner In Past Draw"
+    },
+    "Is Winner In Past Draw": {
+      "Type" : "Choice",
+        "Choices": [
+          {
+            "Variable": "$.status",
+            "NumericEquals": 0,
+            "Next": "Send SNS and Record In Dynamodb"
+          },
+          {
+            "Variable": "$.status",
+            "NumericEquals": 1,
+            "Next": "Random Select Winners"
+          }
+      ]
+    },
+    "Send SNS and Record In Dynamodb": {
+      "Type": "Parallel",
+      "End": true,
+      "Catch": [ 
+        {          
+          "ErrorEquals": [ "States.ALL" ],
+          "Next": "Failed"      
+        } 
+      ],      
+     "Retry": [ 
+        {
+          "ErrorEquals": [ "States.ALL"],          
+          "IntervalSeconds": 1, 
+          "MaxAttempts": 2
+        } 
+      ],
+      "Branches": [
+        {
+         "StartAt": "Notify Winners",
+         "States": {
+           "Notify Winners": {
+             "Type": "Task",
+             "Resource": "arn:aws:states:::sns:publish",
+             "Parameters": {
+               "TopicArn": "arn:aws:sns:ap-southeast-1:379951292773:Lottery-Notification",
+               "Message.$": "$.sns"
+             },
+             "End": true
+           }
+         }
+       },
+       {
+         "StartAt": "Record Winner Queue",
+         "States": {
+           "Record Winner Queue": {
+             "Type": "Task",
+             "InputPath": "$.body",
+             "Resource":
+               "arn:aws:lambda:ap-southeast-1:379951292773:function:Lottery-RecordWinners",
+             "TimeoutSeconds": 300,
+             "End": true
+           }
+         }
+       }
+      ]
+    },
+    "Failed": {
+        "Type": "Fail"
+     }
+  }
+}
+```
+6. 在`状态机定义`栏目的右侧，点击`刷新`按钮，可以看到状态机流转的流程图。点击`下一步`
+7. 在`配置设置`下，选择`为我创建IAM角色`, 输入自定义的IAM角色名称`MyStepFunctionsExecutionRole`
+8. 点击`创建状态机`完成创建过程
+
 ## 参考
 
