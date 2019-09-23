@@ -1,10 +1,10 @@
 # aws-serverless-lottery
 在本次实验中，我们将会通过AWS Serverless应用构建一个无服务器化的抽奖程序。本次的实验涉及到的服务有：
-- ![AWS Lambda](https://aws.amazon.com/lambda/)
-- ![Amazon API Gateway](https://aws.amazon.com/api-gateway/)
-- ![AWS Step Functions](https://aws.amazon.com/step-functions/)
-- ![Amazon SNS](https://aws.amazon.com/sns/)
-- ![Amazon Dynamodb](https://aws.amazon.com/dynamodb/)
+- [AWS Lambda](https://aws.amazon.com/lambda/)
+- [Amazon API Gateway](https://aws.amazon.com/api-gateway/)
+- [AWS Step Functions](https://aws.amazon.com/step-functions/)
+- [Amazon SNS](https://aws.amazon.com/sns/)
+- [Amazon Dynamodb](https://aws.amazon.com/dynamodb/)
 
 
 ## 前提条件
