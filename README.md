@@ -338,7 +338,10 @@ def lambda_handler(event, context):
    - 表名称：`Lottery-Employee`
    - 主键：`employee_id`
 6. `表设置`中确认勾选`使用默认设置`,点击`创建`
-7. 等待表创建完成后
+7. 等待表创建完成后, 通过本repo中的`request-items.json`文件导入数据到`Lottery-Employee`
+```
+$ aws dynamodb batch-write-item --request-items file://request-items.json
+```
 
 ## 参考
 
