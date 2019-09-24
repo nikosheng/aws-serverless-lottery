@@ -350,13 +350,17 @@ $ aws dynamodb batch-write-item --request-items file://request-items.json
 1. 进入AWS控制台，在`服务`中搜索`Step Functions`
 2. 进入之前创建的状态机`Lottery`
 3. 点击`启动执行`
-4. 在弹框中填入输入的`json` 文本
+4. 在弹框中填入输入的`json` 文本，这里的`input`代表在本次实验中需要抽取的获奖人数
 ```
 {
     "input": 2
 }
 ```
 5. 点击`启动执行`
+
+### 实验最终效果
+1. `Dynamodb`表中`Lottery-Winners`记录幸运儿
+2. 邮件会收取到辛运儿的信息
 
 ## 清除实验资源
 1. 删除Dynamodb 创建的表 `Lottery-Employee` 和 `Lottery-Winners`
