@@ -134,7 +134,7 @@
          "States": {
            "Notify Winners": {
              "Type": "Task",
-             "Resource": "arn:aws:states:::sns:publish",
+             "Resource": "arn:aws-cn:states:::sns:publish",
              "Parameters": {
                "TopicArn": "<Notification:ARN>",
                "Message.$": "$.sns"
