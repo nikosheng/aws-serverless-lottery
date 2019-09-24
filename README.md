@@ -343,7 +343,7 @@ def lambda_handler(event, context):
 $ aws dynamodb batch-write-item --request-items file://request-items.json
 ```
 8. 选择表`Lottery-Employee` Tab页面中的`索引`, 点击`创建索引`
-   - 主键：`lottery_serial`
+   - 主键：`lottery_serial`, 字段类型选择`数字`
    - 索引名称：`lottery_serial-index`
 
 ### 执行 Step Functions 状态机
