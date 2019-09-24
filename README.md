@@ -250,7 +250,7 @@ def lambda_handler(event, context):
     winner_details = event['winner_details']
     
     # query in dynamodb
-    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+    dynamodb = boto3.resource('dynamodb', region_name='cn-northwest-1')
     table = dynamodb.Table('Lottery-Winners')
 
     # valiate whether the winner has already been selected in the past draw
@@ -294,7 +294,7 @@ def lambda_handler(event, context):
     employee_ids = [winner['employee_id'] for winner in winner_details]
     
     # save the records in dynamodb
-    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+    dynamodb = boto3.resource('dynamodb', region_name='cn-northwest-1')
     table = dynamodb.Table('Lottery-Winners')
     
     for employee_id in employee_ids:
@@ -338,7 +338,7 @@ def lambda_handler(event, context):
    - 表名称：`Lottery-Employee`
    - 主键：`employee_id`
 6. `表设置`中确认勾选`使用默认设置`,点击`创建`
-7. 等待表创建完成后，点击选中`Lottery-Employee`表，在表内的Tab页面中选择`项目`, 然后点击`创建项目`
+7. 等待表创建完成后
 
 ## 参考
 
