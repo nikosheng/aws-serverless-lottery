@@ -342,6 +342,24 @@ def lambda_handler(event, context):
 ```
 $ aws dynamodb batch-write-item --request-items file://request-items.json
 ```
+8. 选择表`Lottery-Employee` Tab页面中的`索引`, 点击`创建索引`
+   - 主键：`lottery_serial`
+   - 索引名称：`lottery_serial-index`
 
-## 参考
+### 执行 Step Functions 状态机
+1. 进入AWS控制台，在`服务`中搜索`Step Functions`
+2. 进入之前创建的状态机`Lottery`
+3. 点击`启动执行`
+4. 在弹框中填入输入的`json` 文本
+```
+{
+    "input": 2
+}
+```
+5. 点击`启动执行`
 
+## 清除实验资源
+1. 删除Dynamodb 创建的表 `Lottery-Employee` 和 `Lottery-Winners`
+2. 删除状态机 `Lottery`
+3. 删除Lambda函数
+4. 删除SNS主题`Lottery-Notification`
