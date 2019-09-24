@@ -214,7 +214,7 @@ def lambda_handler(event, context):
     num_of_winners = event['num_of_winners']
     
     # query in dynamodb
-    dynamodb = boto3.resource('dynamodb', region_name='ap-southeast-1')
+    dynamodb = boto3.resource('dynamodb', region_name='cn-northwest-1')
     table = dynamodb.Table('Lottery-Employee')
 
     # random select the winners, if has duplicate value, re-run the process
@@ -325,9 +325,20 @@ def lambda_handler(event, context):
 7. 复制主题详细页面的`主题ARN`，替换`Step Functions`状态机下的`<Notification:ARN>`
 
 
-
 ### 创建Amazon Dynamodb 服务
+本次实验需要创建两张`Dynamodb`表来记录员工信息和幸运儿信息。使用`Dynamodb`能更快地通过托管的方式记录数据同时免去数据库运维的压力。
 
+1. 进入AWS控制台，在`服务`中搜索`Dynamodb`
+2. 在左侧控制栏中选在`表`, 然后在主页面中选择`创建表`
+3. 在`创建Dynamodb表`中，填入如下信息
+   - 表名称：`Lottery-Winners`
+   - 主键：`employee_id`
+4. `表设置`中确认勾选`使用默认设置`,点击`创建`
+5. 同样的设置步骤，点击`创建表`,在`创建Dynamodb表`中，填入如下信息
+   - 表名称：`Lottery-Employee`
+   - 主键：`employee_id`
+6. `表设置`中确认勾选`使用默认设置`,点击`创建`
+7. 等待表创建完成后，点击选中`Lottery-Employee`表，在表内的Tab页面中选择`项目`, 然后点击`创建项目`
 
 ## 参考
 
